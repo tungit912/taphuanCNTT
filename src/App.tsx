@@ -77,6 +77,23 @@ const INITIAL_MEDIA: MediaItem[] = [
   }
 ];
 
+interface Wish {
+  id: string;
+  text: string;
+  author: string;
+  date: string;
+}
+
+// --- Mock Data ---
+const INITIAL_WISHES: Wish[] = [
+  {
+    id: 'w1',
+    text: 'Chúc cả lớp mình luôn thành công trên con đường đã chọn!',
+    author: 'Lớp trưởng',
+    date: '25/05/2026'
+  }
+];
+
 // --- Components ---
 
 const Navbar = () => (
@@ -276,7 +293,14 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
   );
 };
 
-const MediaViewer = ({ item, onClose }: { item: MediaItem | null; onClose: () => void }) => {
+const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onClose: () => void; onDelete: (id: string) => void }) => {
+  const handleDelete = () => {
+    if (item && window.confirm('Bạn có chắc chắn muốn xóa kỷ niệm này?')) {
+      onDelete(item.id);
+      onClose();
+    }
+  };
+
   return (
     <AnimatePresence>
       {item && (
@@ -331,12 +355,20 @@ const MediaViewer = ({ item, onClose }: { item: MediaItem | null; onClose: () =>
                 </div>
               </div>
               
-              <div className="mt-8 pt-8 border-t border-black/5 flex gap-4">
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
-                  <Heart className="w-4 h-4" /> <span className="text-sm">Yêu thích</span>
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
-                  <MessageSquare className="w-4 h-4" /> <span className="text-sm">Bình luận</span>
+              <div className="mt-8 pt-8 border-t border-black/5 space-y-3">
+                <div className="flex gap-4">
+                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
+                    <Heart className="w-4 h-4" /> <span className="text-sm">Yêu thích</span>
+                  </button>
+                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
+                    <MessageSquare className="w-4 h-4" /> <span className="text-sm">Bình luận</span>
+                  </button>
+                </div>
+                <button 
+                  onClick={handleDelete}
+                  className="w-full py-3 text-red-500 text-sm font-medium border border-red-100 rounded-xl hover:bg-red-50 transition-colors"
+                >
+                  Xóa kỷ niệm này
                 </button>
               </div>
             </div>
@@ -350,12 +382,52 @@ const MediaViewer = ({ item, onClose }: { item: MediaItem | null; onClose: () =>
 // --- Main App ---
 
 export default function App() {
-  const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
+  const [media, setMedia] = useState<MediaItem[]>(() => {
+    const saved = localStorage.getItem('yearbook_media');
+    return saved ? JSON.parse(saved) : INITIAL_MEDIA;
+  });
+  const [wishes, setWishes] = useState<Wish[]>(() => {
+    const saved = localStorage.getItem('yearbook_wishes');
+    return saved ? JSON.parse(saved) : INITIAL_WISHES;
+  });
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
+  const [newWishText, setNewWishText] = useState('');
+  const [newWishAuthor, setNewWishAuthor] = useState('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('yearbook_media', JSON.stringify(media));
+    } catch (e) {
+      console.error('LocalStorage limit exceeded:', e);
+      alert('Bộ nhớ trình duyệt đã đầy. Không thể lưu thêm ảnh hoặc video dung lượng lớn.');
+    }
+  }, [media]);
+
+  useEffect(() => {
+    localStorage.setItem('yearbook_wishes', JSON.stringify(wishes));
+  }, [wishes]);
+
   const handleUpload = (newItem: MediaItem) => {
     setMedia([newItem, ...media]);
+  };
+
+  const handleDelete = (id: string) => {
+    setMedia(media.filter(m => m.id !== id));
+  };
+
+  const handleAddWish = () => {
+    if (!newWishText || !newWishAuthor) return;
+    const newWish: Wish = {
+      id: Date.now().toString(),
+      text: newWishText,
+      author: newWishAuthor,
+      date: new Date().toLocaleDateString('vi-VN'),
+    };
+    setWishes([newWish, ...wishes]);
+    setNewWishText('');
+    setNewWishAuthor('');
   };
 
   return (
@@ -464,21 +536,45 @@ export default function App() {
           "Dù mai sau có đi đâu về đâu, hãy luôn nhớ về nhau như những người bạn tuyệt vời nhất."
         </p>
         
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-black/5">
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-black/5 mb-12">
           <textarea 
             placeholder="Viết lời chúc của bạn tại đây..."
+            value={newWishText}
+            onChange={(e) => setNewWishText(e.target.value)}
             className="w-full h-32 p-4 bg-brand-cream/50 border border-black/5 rounded-2xl focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all resize-none mb-4"
           />
           <div className="flex flex-col md:flex-row gap-4">
             <input 
               type="text" 
               placeholder="Tên của bạn"
+              value={newWishAuthor}
+              onChange={(e) => setNewWishAuthor(e.target.value)}
               className="flex-1 px-4 py-3 bg-brand-cream/50 border border-black/5 rounded-xl focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
             />
-            <button className="px-8 py-3 bg-brand-gold text-white rounded-xl font-semibold hover:bg-brand-gold/90 transition-all">
+            <button 
+              onClick={handleAddWish}
+              className="px-8 py-3 bg-brand-gold text-white rounded-xl font-semibold hover:bg-brand-gold/90 transition-all"
+            >
               Gửi lời chúc
             </button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+          {wishes.map((wish) => (
+            <motion.div 
+              key={wish.id}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="p-6 bg-white rounded-2xl border border-black/5 shadow-sm"
+            >
+              <p className="text-brand-charcoal/80 mb-4 italic">"{wish.text}"</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-brand-gold">{wish.author}</span>
+                <span className="text-xs text-brand-charcoal/40">{wish.date}</span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
@@ -498,6 +594,7 @@ export default function App() {
       <MediaViewer 
         item={selectedItem} 
         onClose={() => setSelectedItem(null)} 
+        onDelete={handleDelete}
       />
 
       {/* Floating Action Button for Mobile */}
