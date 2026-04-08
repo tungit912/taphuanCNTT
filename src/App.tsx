@@ -86,14 +86,7 @@ interface Wish {
 }
 
 // --- Mock Data ---
-const INITIAL_WISHES: Wish[] = [
-  {
-    id: 'w1',
-    text: 'Chúc cả lớp mình luôn thành công trên con đường đã chọn!',
-    author: 'Lớp trưởng',
-    date: '25/05/2026'
-  }
-];
+const INITIAL_WISHES: Wish[] = [];
 
 // --- Components ---
 
@@ -442,6 +435,12 @@ export default function App() {
     setNewWishAuthor('');
   };
 
+  const handleDeleteWish = (id: string) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa lời chúc này?')) {
+      setWishes(wishes.filter(w => w.id !== id));
+    }
+  };
+
   const handleCardDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent opening the viewer
     if (window.confirm('Bạn có chắc chắn muốn xóa kỷ niệm này?')) {
@@ -595,8 +594,15 @@ export default function App() {
               key={wish.id}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="p-6 bg-white rounded-2xl border border-black/5 shadow-sm"
+              className="p-6 bg-white rounded-2xl border border-black/5 shadow-sm group relative"
             >
+              <button 
+                onClick={() => handleDeleteWish(wish.id)}
+                className="absolute top-4 right-4 p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
+                title="Xóa lời chúc"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
               <p className="text-brand-charcoal/80 mb-4 italic">"{wish.text}"</p>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-bold text-brand-gold">{wish.author}</span>
