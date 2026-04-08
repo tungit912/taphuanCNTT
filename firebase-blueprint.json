@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "MediaItem": {
+      "title": "MediaItem",
+      "description": "A photo or video memory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["image", "video"] },
+        "url": { "type": "string", "format": "uri" },
+        "thumbnail": { "type": "string", "format": "uri" },
+        "caption": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["id", "type", "url", "caption", "author", "date"]
+    },
+    "Wish": {
+      "title": "Wish",
+      "description": "A wish or message from a classmate",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["id", "text", "author", "date"]
+    }
+  },
+  "firestore": {
+    "media": {
+      "schema": { "$ref": "MediaItem" },
+      "description": "Collection of all media memories"
+    },
+    "wishes": {
+      "schema": { "$ref": "Wish" },
+      "description": "Collection of all wishes"
+    }
+  }
+}

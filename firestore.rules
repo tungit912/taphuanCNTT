@@ -1,0 +1,69 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: media
+// Document ID: auto-generated or custom ID
+// Fields:
+//   - id: string (required)
+//   - type: string (required, 'image' or 'video')
+//   - url: string (required, URL)
+//   - thumbnail: string (optional, URL)
+//   - caption: string (required)
+//   - author: string (required)
+//   - date: string (required)
+//
+// Collection: wishes
+// Document ID: auto-generated or custom ID
+// Fields:
+//   - id: string (required)
+//   - text: string (required)
+//   - author: string (required)
+//   - date: string (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidMedia(data) {
+      return data.keys().hasAll(['id', 'type', 'url', 'caption', 'author', 'date']) &&
+             data.id is string &&
+             data.type in ['image', 'video'] &&
+             data.url is string &&
+             data.caption is string && data.caption.size() < 500 &&
+             data.author is string && data.author.size() < 100 &&
+             data.date is string;
+    }
+
+    function isValidWish(data) {
+      return data.keys().hasAll(['id', 'text', 'author', 'date']) &&
+             data.id is string &&
+             data.text is string && data.text.size() < 1000 &&
+             data.author is string && data.author.size() < 100 &&
+             data.date is string;
+    }
+
+    // Media Collection
+    match /media/{mediaId} {
+      allow read: if true; // Publicly readable for the yearbook
+      allow create: if isValidMedia(request.resource.data);
+      allow update: if isValidMedia(request.resource.data);
+      allow delete: if true; // In a real app, we'd restrict this, but for this demo we allow it
+    }
+
+    // Wishes Collection
+    match /wishes/{wishId} {
+      allow read: if true; // Publicly readable
+      allow create: if isValidWish(request.resource.data);
+      allow update: if isValidWish(request.resource.data);
+      allow delete: if true;
+    }
+  }
+}

@@ -20,6 +20,19 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  onSnapshot, 
+  query, 
+  orderBy,
+  setDoc,
+  getDocFromServer
+} from 'firebase/firestore';
+import { db, firebaseConfig } from './firebase';
+
 // --- Types ---
 type MediaType = 'image' | 'video';
 
@@ -389,57 +402,132 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
 // --- Main App ---
 
 export default function App() {
-  const [media, setMedia] = useState<MediaItem[]>(() => {
-    const saved = localStorage.getItem('yearbook_media');
-    return saved ? JSON.parse(saved) : INITIAL_MEDIA;
-  });
-  const [wishes, setWishes] = useState<Wish[]>(() => {
-    const saved = localStorage.getItem('yearbook_wishes');
-    return saved ? JSON.parse(saved) : INITIAL_WISHES;
-  });
+  const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
+  const [wishes, setWishes] = useState<Wish[]>(INITIAL_WISHES);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-
   const [newWishText, setNewWishText] = useState('');
   const [newWishAuthor, setNewWishAuthor] = useState('');
 
+  const isFirebaseEnabled = !!firebaseConfig.apiKey;
+
+  // Test connection
   useEffect(() => {
-    try {
-      localStorage.setItem('yearbook_media', JSON.stringify(media));
-    } catch (e) {
-      console.error('LocalStorage limit exceeded:', e);
-      alert('Bộ nhớ trình duyệt đã đầy. Không thể lưu thêm ảnh hoặc video dung lượng lớn.');
+    if (!isFirebaseEnabled) return;
+    const testConnection = async () => {
+      try {
+        await getDocFromServer(doc(db, 'test', 'connection'));
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration.");
+        }
+      }
+    };
+    testConnection();
+  }, [isFirebaseEnabled]);
+
+  // Real-time listeners
+  useEffect(() => {
+    if (!isFirebaseEnabled) {
+      // Fallback to localStorage
+      const savedMedia = localStorage.getItem('yearbook_media');
+      const savedWishes = localStorage.getItem('yearbook_wishes');
+      if (savedMedia) setMedia(JSON.parse(savedMedia));
+      if (savedWishes) setWishes(JSON.parse(savedWishes));
+      return;
     }
-  }, [media]);
 
+    const mediaQuery = query(collection(db, 'media'), orderBy('date', 'desc'));
+    const unsubscribeMedia = onSnapshot(mediaQuery, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MediaItem));
+      setMedia(items.length > 0 ? items : INITIAL_MEDIA);
+    }, (error) => {
+      console.error("Firestore Media Error:", error);
+    });
+
+    const wishesQuery = query(collection(db, 'wishes'), orderBy('date', 'desc'));
+    const unsubscribeWishes = onSnapshot(wishesQuery, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Wish));
+      setWishes(items.length > 0 ? items : INITIAL_WISHES);
+    }, (error) => {
+      console.error("Firestore Wishes Error:", error);
+    });
+
+    return () => {
+      unsubscribeMedia();
+      unsubscribeWishes();
+    };
+  }, [isFirebaseEnabled]);
+
+  // Save to localStorage as backup if not using Firebase
   useEffect(() => {
-    localStorage.setItem('yearbook_wishes', JSON.stringify(wishes));
-  }, [wishes]);
+    if (!isFirebaseEnabled) {
+      localStorage.setItem('yearbook_media', JSON.stringify(media));
+      localStorage.setItem('yearbook_wishes', JSON.stringify(wishes));
+    }
+  }, [media, wishes, isFirebaseEnabled]);
 
-  const handleUpload = (newItem: MediaItem) => {
-    setMedia([newItem, ...media]);
+  const handleUpload = async (item: Omit<MediaItem, 'id'>) => {
+    if (isFirebaseEnabled) {
+      try {
+        await addDoc(collection(db, 'media'), item);
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
+    } else {
+      const newItem = { ...item, id: Date.now().toString() };
+      setMedia([newItem, ...media]);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setMedia(media.filter(m => m.id !== id));
+  const handleDelete = async (id: string) => {
+    if (isFirebaseEnabled) {
+      try {
+        await deleteDoc(doc(db, 'media', id));
+      } catch (error) {
+        console.error("Delete failed:", error);
+      }
+    } else {
+      setMedia(media.filter(m => m.id !== id));
+    }
   };
 
-  const handleAddWish = () => {
+  const handleAddWish = async () => {
     if (!newWishText || !newWishAuthor) return;
-    const newWish: Wish = {
-      id: Date.now().toString(),
+    const wishData = {
       text: newWishText,
       author: newWishAuthor,
       date: new Date().toLocaleDateString('vi-VN'),
     };
-    setWishes([newWish, ...wishes]);
+
+    if (isFirebaseEnabled) {
+      try {
+        await addDoc(collection(db, 'wishes'), wishData);
+      } catch (error) {
+        console.error("Add wish failed:", error);
+      }
+    } else {
+      const newWish: Wish = {
+        id: Date.now().toString(),
+        ...wishData
+      };
+      setWishes([newWish, ...wishes]);
+    }
     setNewWishText('');
     setNewWishAuthor('');
   };
 
-  const handleDeleteWish = (id: string) => {
+  const handleDeleteWish = async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa lời chúc này?')) {
-      setWishes(wishes.filter(w => w.id !== id));
+      if (isFirebaseEnabled) {
+        try {
+          await deleteDoc(doc(db, 'wishes', id));
+        } catch (error) {
+          console.error("Delete wish failed:", error);
+        }
+      } else {
+        setWishes(wishes.filter(w => w.id !== id));
+      }
     }
   };
 
