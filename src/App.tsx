@@ -15,7 +15,8 @@ import {
   Plus,
   Image as ImageIcon,
   ChevronRight,
-  Menu
+  Menu,
+  Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -118,10 +119,11 @@ const Navbar = () => (
 interface MediaCardProps {
   item: MediaItem;
   onClick: () => void;
+  onDelete: (e: React.MouseEvent, id: string) => void;
   key?: React.Key;
 }
 
-const MediaCard = ({ item, onClick }: MediaCardProps) => {
+const MediaCard = ({ item, onClick, onDelete }: MediaCardProps) => {
   return (
     <motion.div 
       layoutId={item.id}
@@ -136,6 +138,16 @@ const MediaCard = ({ item, onClick }: MediaCardProps) => {
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
+        
+        {/* Delete button on hover */}
+        <button 
+          onClick={(e) => onDelete(e, item.id)}
+          className="absolute top-4 right-4 p-2 bg-red-500/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-600 z-10"
+          title="Xóa kỷ niệm"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
           <p className="text-white font-serif text-lg leading-tight">{item.caption}</p>
           <p className="text-white/70 text-xs mt-1 uppercase tracking-wider">Bởi {item.author}</p>
@@ -430,6 +442,13 @@ export default function App() {
     setNewWishAuthor('');
   };
 
+  const handleCardDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent opening the viewer
+    if (window.confirm('Bạn có chắc chắn muốn xóa kỷ niệm này?')) {
+      handleDelete(id);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-20">
       <Navbar />
@@ -502,7 +521,12 @@ export default function App() {
 
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
           {media.filter(m => m.type === 'image').map((item) => (
-            <MediaCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />
+            <MediaCard 
+              key={item.id} 
+              item={item} 
+              onClick={() => setSelectedItem(item)} 
+              onDelete={handleCardDelete}
+            />
           ))}
         </div>
       </section>
@@ -522,7 +546,12 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {media.filter(m => m.type === 'video').map((item) => (
-              <MediaCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />
+              <MediaCard 
+                key={item.id} 
+                item={item} 
+                onClick={() => setSelectedItem(item)} 
+                onDelete={handleCardDelete}
+              />
             ))}
           </div>
         </div>
