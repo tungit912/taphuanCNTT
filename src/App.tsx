@@ -93,15 +93,15 @@ const INITIAL_WISHES: Wish[] = [];
 const Navbar = () => (
   <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center glass-card border-b-0 rounded-none">
     <div className="flex items-center gap-2">
-      <div className="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center text-white font-serif text-xl italic">
+      <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-xl flex items-center justify-center text-white font-display text-xl font-black">
         K
       </div>
-      <span className="font-serif text-xl font-semibold tracking-tight">Kỷ yếu lớp CNTT</span>
+      <span className="font-display text-xl font-bold tracking-tight">Kỷ yếu lớp CNTT</span>
     </div>
-    <div className="hidden md:flex items-center gap-8 text-sm font-medium uppercase tracking-widest text-brand-charcoal/70">
-      <a href="#gallery" className="hover:text-brand-gold transition-colors">Hình Ảnh</a>
-      <a href="#videos" className="hover:text-brand-gold transition-colors">Video</a>
-      <a href="#messages" className="hover:text-brand-gold transition-colors">Lời Chúc</a>
+    <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-brand-dark/70">
+      <a href="#gallery" className="hover:text-brand-primary transition-colors">Hình Ảnh</a>
+      <a href="#videos" className="hover:text-brand-primary transition-colors">Video</a>
+      <a href="#messages" className="hover:text-brand-primary transition-colors">Lời Chúc</a>
     </div>
     <button className="md:hidden">
       <Menu className="w-6 h-6" />
@@ -135,15 +135,15 @@ const MediaCard = ({ item, onClick, onDelete }: MediaCardProps) => {
         {/* Delete button on hover */}
         <button 
           onClick={(e) => onDelete(e, item.id)}
-          className="absolute top-4 right-4 p-2 bg-red-500/80 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-600 z-10"
+          className="absolute top-4 right-4 p-2 bg-red-500/90 backdrop-blur-sm text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-red-600 z-10 shadow-lg"
           title="Xóa kỷ niệm"
         >
           <Trash2 className="w-4 h-4" />
         </button>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-          <p className="text-white font-serif text-lg leading-tight">{item.caption}</p>
-          <p className="text-white/70 text-xs mt-1 uppercase tracking-wider">Bởi {item.author}</p>
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+          <p className="text-white font-display font-bold text-lg leading-tight">{item.caption}</p>
+          <p className="text-white/70 text-xs mt-1 uppercase tracking-wider font-bold">Bởi {item.author}</p>
         </div>
         {item.type === 'video' && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -208,33 +208,33 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-brand-charcoal/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-brand-dark/40 backdrop-blur-sm"
           />
           <motion.div 
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-lg bg-brand-cream rounded-3xl p-8 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-lg bg-brand-light rounded-[40px] p-10 shadow-2xl overflow-hidden border-2 border-white"
           >
-            <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-black/5 rounded-full transition-colors">
-              <X className="w-5 h-5" />
+            <button onClick={onClose} className="absolute top-8 right-8 p-2 hover:bg-black/5 rounded-full transition-colors z-10">
+              <X className="w-6 h-6" />
             </button>
 
-            <h2 className="text-3xl font-serif mb-6">Tải lên kỷ niệm</h2>
+            <h2 className="text-4xl font-display font-black mb-8 tracking-tight">Tải lên <br /><span className="text-brand-primary">kỷ niệm</span></h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex gap-4 p-1 bg-black/5 rounded-xl">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="flex gap-4 p-1.5 bg-brand-dark/5 rounded-2xl">
                 <button 
                   type="button"
                   onClick={() => setType('image')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'image' ? 'bg-white shadow-sm text-brand-gold' : 'text-brand-charcoal/50'}`}
+                  className={`flex-1 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${type === 'image' ? 'bg-white shadow-lg text-brand-primary' : 'text-brand-dark/40'}`}
                 >
                   <ImageIcon className="w-4 h-4 inline-block mr-2" /> Hình ảnh
                 </button>
                 <button 
                   type="button"
                   onClick={() => setType('video')}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${type === 'video' ? 'bg-white shadow-sm text-brand-gold' : 'text-brand-charcoal/50'}`}
+                  className={`flex-1 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${type === 'video' ? 'bg-white shadow-lg text-brand-primary' : 'text-brand-dark/40'}`}
                 >
                   <VideoIcon className="w-4 h-4 inline-block mr-2" /> Video
                 </button>
@@ -242,7 +242,7 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
 
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="aspect-video border-2 border-dashed border-brand-gold/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-brand-gold/5 transition-colors overflow-hidden relative"
+                className="aspect-video border-4 border-dashed border-brand-primary/20 rounded-[32px] flex flex-col items-center justify-center cursor-pointer hover:bg-brand-primary/5 hover:border-brand-primary/40 transition-all overflow-hidden relative group"
               >
                 {preview ? (
                   type === 'image' ? (
@@ -252,8 +252,10 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
                   )
                 ) : (
                   <>
-                    <Upload className="w-10 h-10 text-brand-gold mb-2" />
-                    <p className="text-sm text-brand-charcoal/60">Nhấn để chọn {type === 'image' ? 'ảnh' : 'video'}</p>
+                    <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Upload className="w-8 h-8 text-brand-primary" />
+                    </div>
+                    <p className="text-sm font-bold text-brand-dark/40 uppercase tracking-widest">Chọn {type === 'image' ? 'ảnh' : 'video'}</p>
                   </>
                 )}
                 <input 
@@ -271,7 +273,7 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
                   placeholder="Chú thích ngắn gọn..." 
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold outline-none transition-all"
+                  className="w-full px-6 py-4 bg-white border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
                   required
                 />
                 <input 
@@ -279,14 +281,14 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
                   placeholder="Tên của bạn" 
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:ring-2 focus:ring-brand-gold/20 focus:border-brand-gold outline-none transition-all"
+                  className="w-full px-6 py-4 bg-white border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
                   required
                 />
               </div>
 
               <button 
                 type="submit"
-                className="w-full py-4 bg-brand-gold text-white rounded-xl font-semibold hover:bg-brand-gold/90 transition-all shadow-lg shadow-brand-gold/20"
+                className="w-full py-5 bg-brand-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all shadow-xl shadow-brand-primary/20"
               >
                 Đăng kỷ niệm
               </button>
@@ -315,11 +317,11 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-brand-charcoal/95 backdrop-blur-xl"
+            className="absolute inset-0 bg-brand-dark/95 backdrop-blur-xl"
           />
           <motion.div 
             layoutId={item.id}
-            className="relative w-full max-w-6xl max-h-full flex flex-col md:flex-row bg-brand-cream rounded-3xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-6xl max-h-full flex flex-col md:flex-row bg-brand-light rounded-3xl overflow-hidden shadow-2xl"
           >
             <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/10 hover:bg-black/20 rounded-full transition-colors">
               <X className="w-5 h-5" />
@@ -345,33 +347,33 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
 
             <div className="w-full md:w-80 p-8 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-brand-gold mb-4">
+                <div className="flex items-center gap-2 text-brand-primary mb-4">
                   {item.type === 'image' ? <Camera className="w-4 h-4" /> : <VideoIcon className="w-4 h-4" />}
-                  <span className="text-xs uppercase tracking-widest font-bold">{item.type === 'image' ? 'KHOẢNH KHẮC' : 'PHIM NGẮN'}</span>
+                  <span className="text-xs uppercase tracking-widest font-black">{item.type === 'image' ? 'KHOẢNH KHẮC' : 'PHIM NGẮN'}</span>
                 </div>
-                <h3 className="text-2xl font-serif mb-4 leading-tight">{item.caption}</h3>
+                <h3 className="text-3xl font-display font-black mb-4 leading-tight">{item.caption}</h3>
                 <div className="space-y-2">
-                  <p className="text-sm text-brand-charcoal/60 flex items-center gap-2">
-                    <span className="font-semibold text-brand-charcoal">Người đăng:</span> {item.author}
+                  <p className="text-sm text-brand-dark/60 flex items-center gap-2">
+                    <span className="font-bold text-brand-dark uppercase text-[10px] tracking-wider">Người đăng:</span> {item.author}
                   </p>
-                  <p className="text-sm text-brand-charcoal/60 flex items-center gap-2">
-                    <span className="font-semibold text-brand-charcoal">Ngày:</span> {item.date}
+                  <p className="text-sm text-brand-dark/60 flex items-center gap-2">
+                    <span className="font-bold text-brand-dark uppercase text-[10px] tracking-wider">Ngày:</span> {item.date}
                   </p>
                 </div>
               </div>
               
               <div className="mt-8 pt-8 border-t border-black/5 space-y-3">
                 <div className="flex gap-4">
-                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
+                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all font-bold">
                     <Heart className="w-4 h-4" /> <span className="text-sm">Yêu thích</span>
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-black/5 transition-colors">
+                  <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-black/10 rounded-xl hover:bg-brand-primary hover:text-white hover:border-brand-primary transition-all font-bold">
                     <MessageSquare className="w-4 h-4" /> <span className="text-sm">Bình luận</span>
                   </button>
                 </div>
                 <button 
                   onClick={handleDelete}
-                  className="w-full py-3 text-red-500 text-sm font-medium border border-red-100 rounded-xl hover:bg-red-50 transition-colors"
+                  className="w-full py-3 text-red-500 text-sm font-bold border border-red-100 rounded-xl hover:bg-red-50 transition-colors"
                 >
                   Xóa kỷ niệm này
                 </button>
@@ -449,36 +451,43 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-brand-light">
       <Navbar />
 
       {/* Hero Section */}
-      <header className="pt-32 pb-16 px-6 max-w-7xl mx-auto text-center">
+      <header className="pt-40 pb-24 px-6 max-w-7xl mx-auto text-center relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-brand-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-brand-secondary/10 rounded-full blur-3xl animate-pulse delay-700" />
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
+          className="relative z-10"
         >
-          <span className="text-brand-gold font-medium tracking-[0.3em] uppercase text-xs mb-4 block">Lớp CNTT - 2026</span>
-          <h1 className="text-6xl md:text-8xl font-serif mb-8 leading-tight">
-            Lưu Giữ <br /> <span className="italic text-brand-gold">Kỷ niệm</span>
+          <span className="inline-block px-4 py-1.5 bg-brand-primary/10 text-brand-primary rounded-full font-bold tracking-widest uppercase text-[10px] mb-6 border border-brand-primary/20">
+            Lớp CNTT - 2026
+          </span>
+          <h1 className="text-6xl md:text-9xl font-display font-black mb-8 leading-[0.9] tracking-tighter">
+            Lưu Giữ <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent">Kỷ niệm</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-brand-charcoal/60 text-lg leading-relaxed mb-12">
-            “Chúng ta đến từ nhiều nơi… nhưng đã cùng nhau tạo nên một kỷ niệm.”
+          <p className="max-w-2xl mx-auto text-brand-dark/60 text-xl leading-relaxed mb-12 font-medium">
+            “Chúng ta đến từ nhiều nơi… nhưng đã cùng nhau tạo nên một kỷ niệm rực rỡ nhất.”
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">
             <button 
               onClick={() => setIsUploadOpen(true)}
-              className="px-8 py-4 bg-brand-charcoal text-white rounded-full font-medium flex items-center gap-2 hover:bg-brand-charcoal/90 transition-all shadow-xl shadow-brand-charcoal/20"
+              className="px-10 py-5 bg-brand-dark text-white rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-2xl shadow-brand-dark/20"
             >
-              <Plus className="w-5 h-5" /> Đóng góp kỷ niệm
+              <Plus className="w-6 h-6" /> Đóng góp kỷ niệm
             </button>
             <a 
               href="#gallery"
-              className="px-8 py-4 bg-white border border-black/10 rounded-full font-medium flex items-center gap-2 hover:bg-black/5 transition-all"
+              className="px-10 py-5 bg-white border-2 border-brand-dark/5 rounded-2xl font-bold flex items-center gap-2 hover:bg-brand-dark hover:text-white transition-all"
             >
-              Khám phá thư viện <ChevronRight className="w-4 h-4" />
+              Khám phá thư viện <ChevronRight className="w-5 h-5" />
             </a>
           </div>
         </motion.div>
@@ -486,34 +495,39 @@ export default function App() {
 
       {/* Stats / Intro */}
       <section className="px-6 py-12 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-black/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-16 border-y-2 border-brand-dark/5">
           {[
-            { label: 'Thành viên', value: '24' },
-            { label: 'Hình ảnh', value: media.filter(m => m.type === 'image').length.toString() },
-            { label: 'Video', value: media.filter(m => m.type === 'video').length.toString() },
-            { label: 'Ngày bên nhau', value: '1000+' },
+            { label: 'Thành viên', value: '24', color: 'text-brand-primary' },
+            { label: 'Hình ảnh', value: media.filter(m => m.type === 'image').length.toString(), color: 'text-brand-secondary' },
+            { label: 'Video', value: media.filter(m => m.type === 'video').length.toString(), color: 'text-brand-accent' },
+            { label: 'Ngày bên nhau', value: '1000+', color: 'text-brand-primary' },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <p className="text-3xl font-serif text-brand-gold mb-1">{stat.value}</p>
-              <p className="text-xs uppercase tracking-widest text-brand-charcoal/50 font-bold">{stat.label}</p>
+              <p className={`text-5xl font-display font-black mb-2 ${stat.color}`}>{stat.value}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-brand-dark/40 font-black">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="px-6 py-20 max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-4xl font-serif mb-2">Thư viện ảnh</h2>
-            <p className="text-brand-charcoal/50">Những khoảnh khắc không thể quên</p>
+      <section id="gallery" className="px-6 py-24 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="max-w-xl">
+            <h2 className="text-5xl md:text-7xl font-display font-black mb-6 leading-tight">Khoảnh Khắc <br /> <span className="text-brand-primary">Đáng Nhớ</span></h2>
+            <p className="text-brand-dark/50 text-lg font-medium">Nơi lưu giữ những nụ cười, những giọt nước mắt và cả những trò đùa tinh nghịch của chúng ta.</p>
           </div>
-          <div className="hidden md:flex gap-2">
-            <div className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center text-brand-charcoal/30 cursor-not-allowed">
-              <ChevronRight className="w-5 h-5 rotate-180" />
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="w-12 h-12 rounded-full border-4 border-brand-light overflow-hidden bg-brand-dark/10">
+                  <img src={`https://picsum.photos/seed/user${i}/100/100`} alt="User" referrerPolicy="no-referrer" />
+                </div>
+              ))}
             </div>
-            <div className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center hover:bg-black/5 cursor-pointer transition-colors">
-              <ChevronRight className="w-5 h-5" />
+            <div className="text-left">
+              <p className="text-sm font-black text-brand-dark">24+ Thành viên</p>
+              <p className="text-xs text-brand-dark/40 font-bold">Đã đóng góp</p>
             </div>
           </div>
         </div>
@@ -531,19 +545,19 @@ export default function App() {
       </section>
 
       {/* Video Section */}
-      <section id="videos" className="bg-brand-charcoal py-24 px-6 overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-gold rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-sage rounded-full blur-[120px]" />
+      <section id="videos" className="bg-brand-dark py-32 px-6 overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-primary rounded-full blur-[150px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-brand-secondary rounded-full blur-[150px] animate-pulse delay-1000" />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif text-white mb-4">Thước Phim Kỷ Niệm</h2>
-            <p className="text-white/50">Xem lại những thước phim đầy cảm xúc</p>
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-8xl font-display font-black text-white mb-6 tracking-tighter">Thước Phim <br /> <span className="text-brand-accent">Kỷ Niệm</span></h2>
+            <p className="text-white/50 text-xl font-medium">Xem lại những thước phim đầy cảm xúc của chúng ta</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {media.filter(m => m.type === 'video').map((item) => (
               <MediaCard 
                 key={item.id} 
@@ -557,19 +571,21 @@ export default function App() {
       </section>
 
       {/* Messages Section */}
-      <section id="messages" className="px-6 py-24 max-w-4xl mx-auto text-center">
-        <Heart className="w-12 h-12 text-brand-gold mx-auto mb-8 fill-brand-gold/20" />
-        <h2 className="text-4xl font-serif mb-6">Gửi lời chúc đến bạn bè</h2>
-        <p className="text-brand-charcoal/60 mb-12 italic">
+      <section id="messages" className="px-6 py-32 max-w-5xl mx-auto text-center">
+        <div className="inline-block p-4 bg-brand-primary/10 rounded-3xl mb-8">
+          <Heart className="w-12 h-12 text-brand-primary fill-brand-primary/20" />
+        </div>
+        <h2 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tight">Gửi lời chúc <br /> <span className="text-brand-secondary">đến bạn bè</span></h2>
+        <p className="text-brand-dark/60 mb-16 italic text-xl font-medium max-w-2xl mx-auto">
           "Dù mai sau có đi đâu về đâu, hãy luôn nhớ về nhau như những người bạn tuyệt vời nhất."
         </p>
         
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-black/5 mb-12">
+        <div className="bg-white p-10 rounded-[40px] shadow-2xl shadow-brand-primary/10 border-2 border-brand-dark/5 mb-20">
           <textarea 
             placeholder="Viết lời chúc của bạn tại đây..."
             value={newWishText}
             onChange={(e) => setNewWishText(e.target.value)}
-            className="w-full h-32 p-4 bg-brand-cream/50 border border-black/5 rounded-2xl focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all resize-none mb-4"
+            className="w-full h-40 p-6 bg-brand-light border-2 border-brand-dark/5 rounded-3xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all resize-none mb-6 text-lg font-medium"
           />
           <div className="flex flex-col md:flex-row gap-4">
             <input 
@@ -577,36 +593,36 @@ export default function App() {
               placeholder="Tên của bạn"
               value={newWishAuthor}
               onChange={(e) => setNewWishAuthor(e.target.value)}
-              className="flex-1 px-4 py-3 bg-brand-cream/50 border border-black/5 rounded-xl focus:ring-2 focus:ring-brand-gold/20 outline-none transition-all"
+              className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all font-bold"
             />
             <button 
               onClick={handleAddWish}
-              className="px-8 py-3 bg-brand-gold text-white rounded-xl font-semibold hover:bg-brand-gold/90 transition-all"
+              className="px-10 py-4 bg-brand-primary text-white rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand-primary/20"
             >
               Gửi lời chúc
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
           {wishes.map((wish) => (
             <motion.div 
               key={wish.id}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="p-6 bg-white rounded-2xl border border-black/5 shadow-sm group relative"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              className="p-8 bg-white rounded-[32px] border-2 border-brand-dark/5 shadow-xl group relative hover:border-brand-primary/20 transition-all"
             >
               <button 
                 onClick={() => handleDeleteWish(wish.id)}
-                className="absolute top-4 right-4 p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
+                className="absolute top-6 right-6 p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
                 title="Xóa lời chúc"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-5 h-5" />
               </button>
-              <p className="text-brand-charcoal/80 mb-4 italic">"{wish.text}"</p>
+              <p className="text-brand-dark/80 mb-6 italic text-lg leading-relaxed font-medium">"{wish.text}"</p>
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-brand-gold">{wish.author}</span>
-                <span className="text-xs text-brand-charcoal/40">{wish.date}</span>
+                <span className="text-sm font-black text-brand-primary uppercase tracking-wider">{wish.author}</span>
+                <span className="text-[10px] font-black text-brand-dark/30 uppercase tracking-widest">{wish.date}</span>
               </div>
             </motion.div>
           ))}
@@ -614,9 +630,9 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-12 border-t border-black/5 text-center">
-        <p className="font-serif text-xl mb-4 italic">Kỷ yếu lớp CNTT</p>
-        <p className="text-xs uppercase tracking-[0.2em] text-brand-charcoal/40">Made with love for our class</p>
+      <footer className="px-6 py-20 border-t-2 border-brand-dark/5 text-center bg-white">
+        <p className="font-display text-2xl font-black mb-4 tracking-tight">Kỷ yếu lớp CNTT</p>
+        <p className="text-[10px] uppercase tracking-[0.4em] text-brand-dark/30 font-black">Made with love for our class • 2026</p>
       </footer>
 
       {/* Modals */}
@@ -636,9 +652,9 @@ export default function App() {
       <motion.button 
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsUploadOpen(true)}
-        className="fixed bottom-8 right-8 w-14 h-14 bg-brand-gold text-white rounded-full shadow-2xl flex items-center justify-center z-40 md:hidden"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-brand-primary text-white rounded-2xl shadow-2xl flex items-center justify-center z-40 md:hidden"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-8 h-8" />
       </motion.button>
     </div>
   );
