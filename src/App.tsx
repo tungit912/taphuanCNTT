@@ -98,8 +98,32 @@ interface Wish {
   date: string;
 }
 
+interface Student {
+  id: string;
+  name: string;
+  phone?: string;
+  role?: string;
+}
+
 // --- Mock Data ---
 const INITIAL_WISHES: Wish[] = [];
+const INITIAL_STUDENTS: Student[] = [
+  { id: '1', name: 'Nguyễn Văn A', phone: '0901234567', role: 'Lớp trưởng' },
+  { id: '2', name: 'Trần Thị B', phone: '0907654321', role: 'Lớp phó' },
+];
+
+// --- Helpers ---
+const getYoutubeEmbedUrl = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+};
+
+const getYoutubeThumbnail = (url: string) => {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? `https://img.youtube.com/vi/${match[2]}/mqdefault.jpg` : null;
+};
 
 // --- Components ---
 
@@ -139,11 +163,19 @@ const MediaCard = ({ item, onClick, onDelete }: MediaCardProps) => {
     >
       <div className={`relative overflow-hidden ${item.type === 'image' ? 'aspect-portrait md:aspect-auto md:h-80' : 'aspect-video'}`}>
         <img 
-          src={item.type === 'image' ? item.url : (item.thumbnail || item.url)} 
+          src={item.type === 'image' ? item.url : (item.thumbnail || getYoutubeThumbnail(item.url) || item.url)} 
           alt={item.caption}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
+        
+        {item.type === 'video' && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+            <div className="w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50">
+              <Play className="w-6 h-6 text-white fill-white" />
+            </div>
+          </div>
+        )}
         
         {/* Delete button on hover */}
         <button 
@@ -170,10 +202,11 @@ const MediaCard = ({ item, onClick, onDelete }: MediaCardProps) => {
   );
 };
 
-const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: () => void; onUpload: (item: MediaItem) => void }) => {
+const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: () => void; onUpload: (item: Omit<MediaItem, 'id'>) => void }) => {
   const [type, setType] = useState<MediaType>('image');
   const [caption, setCaption] = useState('');
   const [author, setAuthor] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -181,6 +214,11 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // Check file size (limit to 2MB for base64 storage)
+      if (selectedFile.size > 2 * 1024 * 1024) {
+        alert('File quá lớn (tối đa 2MB). Vui lòng sử dụng link URL cho video hoặc ảnh dung lượng cao.');
+        return;
+      }
       setFile(selectedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -192,12 +230,16 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preview || !caption || !author) return;
+    
+    const finalUrl = type === 'video' && videoUrl ? videoUrl : preview;
+    if (!finalUrl || !caption || !author) {
+      alert('Vui lòng điền đầy đủ thông tin và chọn file hoặc dán link.');
+      return;
+    }
 
-    const newItem: MediaItem = {
-      id: Date.now().toString(),
+    const newItem: Omit<MediaItem, 'id'> = {
       type,
-      url: preview,
+      url: finalUrl,
       caption,
       author,
       date: new Date().toLocaleDateString('vi-VN'),
@@ -208,6 +250,7 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
     // Reset
     setCaption('');
     setAuthor('');
+    setVideoUrl('');
     setFile(null);
     setPreview(null);
   };
@@ -281,6 +324,18 @@ const UploadModal = ({ isOpen, onClose, onUpload }: { isOpen: boolean; onClose: 
               </div>
 
               <div className="space-y-4">
+                {type === 'video' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Hoặc dán link video (YouTube, Drive, MP4...)</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://example.com/video.mp4" 
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      className="w-full px-6 py-4 bg-white border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                    />
+                  </div>
+                )}
                 <input 
                   type="text" 
                   placeholder="Chú thích ngắn gọn..." 
@@ -349,12 +404,21 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <video 
-                  src={item.url} 
-                  controls 
-                  autoPlay 
-                  className="max-w-full max-h-full"
-                />
+                getYoutubeEmbedUrl(item.url) ? (
+                  <iframe 
+                    src={getYoutubeEmbedUrl(item.url)!}
+                    className="w-full aspect-video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video 
+                    src={item.url} 
+                    controls 
+                    autoPlay 
+                    className="max-w-full max-h-full"
+                  />
+                )
               )}
             </div>
 
@@ -404,10 +468,14 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
 export default function App() {
   const [media, setMedia] = useState<MediaItem[]>(INITIAL_MEDIA);
   const [wishes, setWishes] = useState<Wish[]>(INITIAL_WISHES);
+  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [newWishText, setNewWishText] = useState('');
   const [newWishAuthor, setNewWishAuthor] = useState('');
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentPhone, setNewStudentPhone] = useState('');
+  const [newStudentRole, setNewStudentRole] = useState('');
 
   const isFirebaseEnabled = !!firebaseConfig.apiKey;
 
@@ -453,9 +521,18 @@ export default function App() {
       console.error("Firestore Wishes Error:", error);
     });
 
+    const studentsQuery = query(collection(db, 'students'), orderBy('name', 'asc'));
+    const unsubscribeStudents = onSnapshot(studentsQuery, (snapshot) => {
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
+      setStudents(items.length > 0 ? items : INITIAL_STUDENTS);
+    }, (error) => {
+      console.error("Firestore Students Error:", error);
+    });
+
     return () => {
       unsubscribeMedia();
       unsubscribeWishes();
+      unsubscribeStudents();
     };
   }, [isFirebaseEnabled]);
 
@@ -464,8 +541,9 @@ export default function App() {
     if (!isFirebaseEnabled) {
       localStorage.setItem('yearbook_media', JSON.stringify(media));
       localStorage.setItem('yearbook_wishes', JSON.stringify(wishes));
+      localStorage.setItem('yearbook_students', JSON.stringify(students));
     }
-  }, [media, wishes, isFirebaseEnabled]);
+  }, [media, wishes, students, isFirebaseEnabled]);
 
   const handleUpload = async (item: Omit<MediaItem, 'id'>) => {
     if (isFirebaseEnabled) {
@@ -527,6 +605,46 @@ export default function App() {
         }
       } else {
         setWishes(wishes.filter(w => w.id !== id));
+      }
+    }
+  };
+
+  const handleAddStudent = async () => {
+    if (!newStudentName) return;
+    const studentData = {
+      name: newStudentName,
+      phone: newStudentPhone,
+      role: newStudentRole,
+    };
+
+    if (isFirebaseEnabled) {
+      try {
+        await addDoc(collection(db, 'students'), studentData);
+      } catch (error) {
+        console.error("Add student failed:", error);
+      }
+    } else {
+      const newStudent: Student = {
+        id: Date.now().toString(),
+        ...studentData
+      };
+      setStudents([...students, newStudent]);
+    }
+    setNewStudentName('');
+    setNewStudentPhone('');
+    setNewStudentRole('');
+  };
+
+  const handleDeleteStudent = async (id: string) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa thành viên này?')) {
+      if (isFirebaseEnabled) {
+        try {
+          await deleteDoc(doc(db, 'students', id));
+        } catch (error) {
+          console.error("Delete student failed:", error);
+        }
+      } else {
+        setStudents(students.filter(s => s.id !== id));
       }
     }
   };
@@ -658,62 +776,144 @@ export default function App() {
         </div>
       </section>
 
-      {/* Messages Section */}
-      <section id="messages" className="px-6 py-32 max-w-5xl mx-auto text-center">
-        <div className="inline-block p-4 bg-brand-primary/10 rounded-3xl mb-8">
-          <Heart className="w-12 h-12 text-brand-primary fill-brand-primary/20" />
-        </div>
-        <h2 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tight">Gửi lời chúc <br /> <span className="text-brand-secondary">đến bạn bè</span></h2>
-        <p className="text-brand-dark/60 mb-16 italic text-xl font-medium max-w-2xl mx-auto">
-          "Dù mai sau có đi đâu về đâu, hãy luôn nhớ về nhau như những người bạn tuyệt vời nhất."
-        </p>
-        
-        <div className="bg-white p-10 rounded-[40px] shadow-2xl shadow-brand-primary/10 border-2 border-brand-dark/5 mb-20">
-          <textarea 
-            placeholder="Viết lời chúc của bạn tại đây..."
-            value={newWishText}
-            onChange={(e) => setNewWishText(e.target.value)}
-            className="w-full h-40 p-6 bg-brand-light border-2 border-brand-dark/5 rounded-3xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all resize-none mb-6 text-lg font-medium"
-          />
-          <div className="flex flex-col md:flex-row gap-4">
-            <input 
-              type="text" 
-              placeholder="Tên của bạn"
-              value={newWishAuthor}
-              onChange={(e) => setNewWishAuthor(e.target.value)}
-              className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all font-bold"
-            />
-            <button 
-              onClick={handleAddWish}
-              className="px-10 py-4 bg-brand-primary text-white rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand-primary/20"
-            >
-              Gửi lời chúc
-            </button>
+      {/* Messages & Class List Section */}
+      <section id="messages" className="px-6 py-32 max-w-7xl mx-auto">
+        <div className="text-center mb-20">
+          <div className="inline-block p-4 bg-brand-primary/10 rounded-3xl mb-8">
+            <Heart className="w-12 h-12 text-brand-primary fill-brand-primary/20" />
           </div>
+          <h2 className="text-5xl md:text-7xl font-display font-black mb-8 tracking-tight">Kỷ Niệm & <br /> <span className="text-brand-secondary">Thành Viên</span></h2>
+          <p className="text-brand-dark/60 italic text-xl font-medium max-w-2xl mx-auto">
+            "Dù mai sau có đi đâu về đâu, hãy luôn nhớ về nhau như những người bạn tuyệt vời nhất."
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-          {wishes.map((wish) => (
-            <motion.div 
-              key={wish.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              className="p-8 bg-white rounded-[32px] border-2 border-brand-dark/5 shadow-xl group relative hover:border-brand-primary/20 transition-all"
-            >
-              <button 
-                onClick={() => handleDeleteWish(wish.id)}
-                className="absolute top-6 right-6 p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
-                title="Xóa lời chúc"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-              <p className="text-brand-dark/80 mb-6 italic text-lg leading-relaxed font-medium">"{wish.text}"</p>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-black text-brand-primary uppercase tracking-wider">{wish.author}</span>
-                <span className="text-[10px] font-black text-brand-dark/30 uppercase tracking-widest">{wish.date}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          {/* Left: Wishes (2 columns on desktop) */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-3xl font-display font-black tracking-tight">Lời Chúc <span className="text-brand-primary">({wishes.length})</span></h3>
+            </div>
+            
+            <div className="bg-white p-8 rounded-[40px] shadow-2xl shadow-brand-primary/5 border-2 border-brand-dark/5 mb-12">
+              <textarea 
+                placeholder="Viết lời chúc của bạn tại đây..."
+                value={newWishText}
+                onChange={(e) => setNewWishText(e.target.value)}
+                className="w-full h-32 p-6 bg-brand-light border-2 border-brand-dark/5 rounded-3xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all resize-none mb-6 text-lg font-medium"
+              />
+              <div className="flex flex-col md:flex-row gap-4">
+                <input 
+                  type="text" 
+                  placeholder="Tên của bạn"
+                  value={newWishAuthor}
+                  onChange={(e) => setNewWishAuthor(e.target.value)}
+                  className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all font-bold"
+                />
+                <button 
+                  onClick={handleAddWish}
+                  className="px-10 py-4 bg-brand-primary text-white rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-brand-primary/20"
+                >
+                  Gửi lời chúc
+                </button>
               </div>
-            </motion.div>
-          ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {wishes.map((wish) => (
+                <motion.div 
+                  key={wish.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  className="p-8 bg-white rounded-[32px] border-2 border-brand-dark/5 shadow-xl group relative hover:border-brand-primary/20 transition-all"
+                >
+                  <button 
+                    onClick={() => handleDeleteWish(wish.id)}
+                    className="absolute top-6 right-6 p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
+                    title="Xóa lời chúc"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                  <p className="text-brand-dark/80 mb-6 italic text-lg leading-relaxed font-medium">"{wish.text}"</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-black text-brand-primary uppercase tracking-wider">{wish.author}</span>
+                    <span className="text-[10px] font-black text-brand-dark/30 uppercase tracking-widest">{wish.date}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Class List */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-3xl font-display font-black tracking-tight">Danh Sách <span className="text-brand-secondary">Lớp</span></h3>
+            </div>
+
+            <div className="bg-white p-8 rounded-[40px] shadow-2xl shadow-brand-secondary/5 border-2 border-brand-dark/5 mb-8">
+              <div className="space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="Họ và tên"
+                  value={newStudentName}
+                  onChange={(e) => setNewStudentName(e.target.value)}
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-secondary/10 outline-none transition-all font-bold"
+                />
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Điện thoại"
+                    value={newStudentPhone}
+                    onChange={(e) => setNewStudentPhone(e.target.value)}
+                    className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-secondary/10 outline-none transition-all font-bold text-sm"
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="Chức vụ"
+                    value={newStudentRole}
+                    onChange={(e) => setNewStudentRole(e.target.value)}
+                    className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-secondary/10 outline-none transition-all font-bold text-sm"
+                  />
+                </div>
+                <button 
+                  onClick={handleAddStudent}
+                  className="w-full py-4 bg-brand-dark text-white rounded-2xl font-black uppercase tracking-widest hover:scale-[1.02] transition-all shadow-xl"
+                >
+                  Thêm thành viên
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] border-2 border-brand-dark/5 overflow-hidden shadow-xl">
+              <div className="max-h-[600px] overflow-y-auto p-2 space-y-2">
+                {students.map((student, index) => (
+                  <div 
+                    key={student.id}
+                    className="flex items-center justify-between p-4 rounded-2xl hover:bg-brand-light transition-colors group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-brand-dark/5 rounded-xl flex items-center justify-center text-brand-dark/40 font-black text-xs">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-black text-brand-dark">{student.name}</p>
+                        <div className="flex gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          {student.role && <span className="text-brand-secondary">{student.role}</span>}
+                          {student.phone && <span className="text-brand-dark/30">{student.phone}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteStudent(student.id)}
+                      className="p-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

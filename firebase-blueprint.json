@@ -26,6 +26,18 @@
         "date": { "type": "string" }
       },
       "required": ["id", "text", "author", "date"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "A member of the class",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string" }
+      },
+      "required": ["id", "name"]
     }
   },
   "firestore": {
@@ -36,6 +48,10 @@
     "wishes": {
       "schema": { "$ref": "Wish" },
       "description": "Collection of all wishes"
+    },
+    "students": {
+      "schema": { "$ref": "Student" },
+      "description": "Collection of all class members"
     }
   }
 }

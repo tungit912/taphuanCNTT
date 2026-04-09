@@ -50,6 +50,14 @@ service cloud.firestore {
              data.date is string;
     }
 
+    function isValidStudent(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.id is string &&
+             data.name is string && data.name.size() < 100 &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('role' in data) || data.role is string);
+    }
+
     // Media Collection
     match /media/{mediaId} {
       allow read: if true; // Publicly readable for the yearbook
@@ -63,6 +71,14 @@ service cloud.firestore {
       allow read: if true; // Publicly readable
       allow create: if isValidWish(request.resource.data);
       allow update: if isValidWish(request.resource.data);
+      allow delete: if true;
+    }
+
+    // Students Collection
+    match /students/{studentId} {
+      allow read: if true;
+      allow create: if isValidStudent(request.resource.data);
+      allow update: if isValidStudent(request.resource.data);
       allow delete: if true;
     }
   }
