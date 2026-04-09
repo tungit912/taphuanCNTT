@@ -476,7 +476,6 @@ const FundModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [paymentCode, setPaymentCode] = useState('');
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -501,7 +500,6 @@ const FundModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
           name,
           phone,
           email,
-          paymentCode,
           amount,
           date: new Date().toLocaleString('vi-VN')
         }),
@@ -512,7 +510,6 @@ const FundModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
       setName('');
       setPhone('');
       setEmail('');
-      setPaymentCode('');
       setAmount('');
     } catch (error) {
       console.error('Lỗi khi gửi thông tin:', error);
@@ -582,17 +579,6 @@ const FundModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@gmail.com"
-                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Mã thanh toán</label>
-                <input 
-                  type="text" 
-                  required
-                  value={paymentCode}
-                  onChange={(e) => setPaymentCode(e.target.value)}
-                  placeholder="VNPAY123..."
                   className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
                 />
               </div>
