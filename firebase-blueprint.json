@@ -35,6 +35,7 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "role": { "type": "string" }
       },
       "required": ["id", "name"]

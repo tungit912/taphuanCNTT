@@ -16,7 +16,8 @@ import {
   Image as ImageIcon,
   ChevronRight,
   Menu,
-  Trash2
+  Trash2,
+  CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -102,14 +103,15 @@ interface Student {
   id: string;
   name: string;
   phone?: string;
+  email?: string;
   role?: string;
 }
 
 // --- Mock Data ---
 const INITIAL_WISHES: Wish[] = [];
 const INITIAL_STUDENTS: Student[] = [
-  { id: '1', name: 'Nguyễn Văn A', phone: '0901234567', role: 'Lớp trưởng' },
-  { id: '2', name: 'Trần Thị B', phone: '0907654321', role: 'Lớp phó' },
+  { id: '1', name: 'Nguyễn Văn A', phone: '0901234567', email: 'vana@gmail.com', role: 'Lớp trưởng' },
+  { id: '2', name: 'Trần Thị B', phone: '0907654321', email: 'thib@gmail.com', role: 'Lớp phó' },
 ];
 
 // --- Helpers ---
@@ -139,6 +141,13 @@ const Navbar = () => (
       <a href="#gallery" className="hover:text-brand-primary transition-colors">Hình Ảnh</a>
       <a href="#videos" className="hover:text-brand-primary transition-colors">Video</a>
       <a href="#messages" className="hover:text-brand-primary transition-colors">Lời Chúc</a>
+      <button 
+        onClick={() => window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE', '_blank')}
+        className="flex items-center gap-2 px-6 py-2 bg-brand-primary text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-primary/20"
+      >
+        <CreditCard className="w-3 h-3" />
+        Nộp quỹ lớp
+      </button>
     </div>
     <button className="md:hidden">
       <Menu className="w-6 h-6" />
@@ -475,6 +484,7 @@ export default function App() {
   const [newWishAuthor, setNewWishAuthor] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentPhone, setNewStudentPhone] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
   const [newStudentRole, setNewStudentRole] = useState('');
 
   const isFirebaseEnabled = !!firebaseConfig.apiKey;
@@ -614,6 +624,7 @@ export default function App() {
     const studentData = {
       name: newStudentName,
       phone: newStudentPhone,
+      email: newStudentEmail,
       role: newStudentRole,
     };
 
@@ -632,6 +643,7 @@ export default function App() {
     }
     setNewStudentName('');
     setNewStudentPhone('');
+    setNewStudentEmail('');
     setNewStudentRole('');
   };
 
@@ -868,6 +880,13 @@ export default function App() {
                     className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-secondary/10 outline-none transition-all font-bold text-sm"
                   />
                   <input 
+                    type="email" 
+                    placeholder="Gmail"
+                    value={newStudentEmail}
+                    onChange={(e) => setNewStudentEmail(e.target.value)}
+                    className="flex-1 px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-secondary/10 outline-none transition-all font-bold text-sm"
+                  />
+                  <input 
                     type="text" 
                     placeholder="Chức vụ"
                     value={newStudentRole}
@@ -897,9 +916,10 @@ export default function App() {
                       </div>
                       <div>
                         <p className="font-black text-brand-dark">{student.name}</p>
-                        <div className="flex gap-2 text-[10px] font-bold uppercase tracking-widest">
+                        <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-widest">
                           {student.role && <span className="text-brand-secondary">{student.role}</span>}
                           {student.phone && <span className="text-brand-dark/30">{student.phone}</span>}
+                          {student.email && <span className="text-brand-primary/40">{student.email}</span>}
                         </div>
                       </div>
                     </div>

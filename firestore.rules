@@ -55,6 +55,7 @@ service cloud.firestore {
              data.id is string &&
              data.name is string && data.name.size() < 100 &&
              (!('phone' in data) || data.phone is string) &&
+             (!('email' in data) || (data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))) &&
              (!('role' in data) || data.role is string);
     }
 
