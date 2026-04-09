@@ -703,7 +703,7 @@ export default function App() {
       <section className="px-6 py-12 max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-16 border-y-2 border-brand-dark/5">
           {[
-            { label: 'Thành viên', value: '24', color: 'text-brand-primary' },
+            { label: 'Thành viên', value: students.length.toString(), color: 'text-brand-primary' },
             { label: 'Hình ảnh', value: media.filter(m => m.type === 'image').length.toString(), color: 'text-brand-secondary' },
             { label: 'Video', value: media.filter(m => m.type === 'video').length.toString(), color: 'text-brand-accent' },
             { label: 'Ngày bên nhau', value: '1000+', color: 'text-brand-primary' },
@@ -732,7 +732,7 @@ export default function App() {
               ))}
             </div>
             <div className="text-left">
-              <p className="text-sm font-black text-brand-dark">24+ Thành viên</p>
+              <p className="text-sm font-black text-brand-dark">{students.length}+ Thành viên</p>
               <p className="text-xs text-brand-dark/40 font-bold">Đã đóng góp</p>
             </div>
           </div>
