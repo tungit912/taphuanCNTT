@@ -129,7 +129,7 @@ const getYoutubeThumbnail = (url: string) => {
 
 // --- Components ---
 
-const Navbar = () => (
+const Navbar = ({ onOpenFund }: { onOpenFund: () => void }) => (
   <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center glass-card border-b-0 rounded-none">
     <div className="flex items-center gap-2">
       <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-xl flex items-center justify-center text-white font-display text-xl font-black">
@@ -142,7 +142,7 @@ const Navbar = () => (
       <a href="#videos" className="hover:text-brand-primary transition-colors">Video</a>
       <a href="#messages" className="hover:text-brand-primary transition-colors">Lời Chúc</a>
       <button 
-        onClick={() => window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE', '_blank')}
+        onClick={onOpenFund}
         className="flex items-center gap-2 px-6 py-2 bg-brand-primary text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-primary/20"
       >
         <CreditCard className="w-3 h-3" />
@@ -472,6 +472,157 @@ const MediaViewer = ({ item, onClose, onDelete }: { item: MediaItem | null; onCl
   );
 };
 
+const FundModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [paymentCode, setPaymentCode] = useState('');
+  const [amount, setAmount] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // URL của Apps Script bạn đã triển khai
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwACLt0qUh3nZvJ3PKaLr2DIMrKkqhn5UexEw5DGckzRQZZIuRugOatO2ooxwFou1gr7w/exec';
+      
+      // Gửi dữ liệu dưới dạng form-data hoặc query params tùy theo cách bạn viết Apps Script
+      // Ở đây tôi giả định Apps Script nhận POST với JSON
+      const response = await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Apps Script thường yêu cầu no-cors nếu không cấu hình CORS
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'submitFund',
+          name,
+          phone,
+          email,
+          paymentCode,
+          amount,
+          date: new Date().toLocaleString('vi-VN')
+        }),
+      });
+
+      alert('Thông tin nộp quỹ đã được gửi! Cảm ơn bạn.');
+      onClose();
+      setName('');
+      setPhone('');
+      setEmail('');
+      setPaymentCode('');
+      setAmount('');
+    } catch (error) {
+      console.error('Lỗi khi gửi thông tin:', error);
+      alert('Có lỗi xảy ra, vui lòng thử lại sau.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-brand-dark/60 backdrop-blur-md"
+          />
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="relative w-full max-w-md bg-white rounded-[40px] p-10 shadow-2xl border-2 border-brand-primary/10"
+          >
+            <button onClick={onClose} className="absolute top-8 right-8 p-2 hover:bg-black/5 rounded-full transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="mb-8">
+              <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-4">
+                <CreditCard className="w-8 h-8 text-brand-primary" />
+              </div>
+              <h2 className="text-3xl font-display font-black tracking-tight">Nộp quỹ <span className="text-brand-primary">lớp</span></h2>
+              <p className="text-sm text-brand-dark/40 font-bold mt-2 uppercase tracking-widest">Đóng góp cho tập thể</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Họ và tên</label>
+                <input 
+                  type="text" 
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Số điện thoại</label>
+                <input 
+                  type="tel" 
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="090..."
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Email</label>
+                <input 
+                  type="email" 
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@gmail.com"
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Mã thanh toán</label>
+                <input 
+                  type="text" 
+                  required
+                  value={paymentCode}
+                  onChange={(e) => setPaymentCode(e.target.value)}
+                  placeholder="VNPAY123..."
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-brand-dark/40 ml-2">Số tiền (VNĐ)</label>
+                <input 
+                  type="number" 
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="50000"
+                  className="w-full px-6 py-4 bg-brand-light border-2 border-brand-dark/5 rounded-2xl focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary/20 outline-none transition-all font-bold"
+                />
+              </div>
+
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-5 bg-brand-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50 disabled:scale-100 mt-4"
+              >
+                {isSubmitting ? 'Đang gửi...' : 'Xác nhận nộp'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -480,6 +631,7 @@ export default function App() {
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [isFundOpen, setIsFundOpen] = useState(false);
   const [newWishText, setNewWishText] = useState('');
   const [newWishAuthor, setNewWishAuthor] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
@@ -670,7 +822,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-20 bg-brand-light">
-      <Navbar />
+      <Navbar onOpenFund={() => setIsFundOpen(true)} />
 
       {/* Hero Section */}
       <header className="pt-40 pb-24 px-6 max-w-7xl mx-auto text-center relative overflow-hidden">
@@ -948,6 +1100,11 @@ export default function App() {
         isOpen={isUploadOpen} 
         onClose={() => setIsUploadOpen(false)} 
         onUpload={handleUpload} 
+      />
+
+      <FundModal 
+        isOpen={isFundOpen}
+        onClose={() => setIsFundOpen(false)}
       />
       
       <MediaViewer 
